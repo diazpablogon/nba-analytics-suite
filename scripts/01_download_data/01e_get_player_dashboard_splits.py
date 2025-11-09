@@ -34,6 +34,7 @@ save_parquet = tools.save_parquet
 output_root = tools.output_root
 with_retries = tools.with_retries
 list_player_ids = tools.list_player_ids
+ensure_nba_api = tools.ensure_nba_api
 
 LOGGER = logging.getLogger("01e_get_player_dashboard_splits")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -83,6 +84,12 @@ def iter_datasets(df) -> Iterable[tuple[str, object]]:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+
+    try:
+        ensure_nba_api()
+    except ModuleNotFoundError as exc:
+        LOGGER.error("%s", exc)
+        return 1
 
     seasons = parse_seasons_arg(args.seasons)
     if not seasons:

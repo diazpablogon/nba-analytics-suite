@@ -83,6 +83,7 @@ def _load_tools_module():
 tools = _load_tools_module()
 parse_seasons_arg = tools.parse_seasons_arg
 repo_root = tools.repo_root
+ensure_nba_api = tools.ensure_nba_api
 
 
 LOGGER = logging.getLogger("01a_downloader_total")
@@ -148,6 +149,12 @@ def build_command(script: str, args: argparse.Namespace, extras: List[str]) -> L
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+
+    try:
+        ensure_nba_api()
+    except ModuleNotFoundError as exc:
+        LOGGER.error("%s", exc)
+        return 1
 
     seasons = parse_seasons_arg(args.seasons)
     if not seasons:

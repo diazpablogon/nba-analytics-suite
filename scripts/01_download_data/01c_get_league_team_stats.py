@@ -33,6 +33,7 @@ fetch_endpoint_to_df = tools.fetch_endpoint_to_df
 save_parquet = tools.save_parquet
 output_root = tools.output_root
 with_retries = tools.with_retries
+ensure_nba_api = tools.ensure_nba_api
 
 LOGGER = logging.getLogger("01c_get_league_team_stats")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
@@ -60,6 +61,12 @@ def slugify(value: str) -> str:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
+
+    try:
+        ensure_nba_api()
+    except ModuleNotFoundError as exc:
+        LOGGER.error("%s", exc)
+        return 1
 
     seasons = parse_seasons_arg(args.seasons)
     if not seasons:

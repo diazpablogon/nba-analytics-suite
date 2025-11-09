@@ -19,6 +19,10 @@ logging.basicConfig(level=logging.INFO, format=LOG_FORMAT)
 LOGGER = logging.getLogger(__name__)
 
 DEFAULT_SLEEP: float = 0.8
+NBA_API_IMPORT_ERROR = (
+    "The 'nba_api' package is required to run the download scripts. "
+    "Install it with 'pip install nba_api'."
+)
 EXPECTED_META_COLUMNS = [
     "season",
     "season_type",
@@ -110,6 +114,19 @@ def with_retries(
     raise RuntimeError("with_retries exhausted without returning")
 
 
+def _import_module(module_name: str):
+    try:
+        return importlib.import_module(module_name)
+    except ModuleNotFoundError as exc:  # pragma: no cover - guidance for missing deps
+        raise ModuleNotFoundError(f"{NBA_API_IMPORT_ERROR} (missing module '{module_name}')") from exc
+
+
+def ensure_nba_api() -> None:
+    """Ensure ``nba_api`` and its stats endpoints are importable."""
+
+    _import_module("nba_api.stats.endpoints")
+
+
 def _enrich_with_meta(df: pd.DataFrame, meta: dict[str, Any]) -> pd.DataFrame:
     if df is None:
         return pd.DataFrame()
@@ -164,9 +181,8 @@ def save_parquet(df: pd.DataFrame, path: Path, **meta: Any) -> dict[str, Any]:
 def list_team_ids() -> List[int]:
     """Return active team IDs from the static endpoint."""
 
-    from nba_api.stats.static import teams
-
-    team_info = teams.get_teams()
+    teams_module = _import_module("nba_api.stats.static.teams")
+    team_info = teams_module.get_teams()
     team_ids = sorted({team["id"] for team in team_info if "id" in team})
     return team_ids
 
@@ -174,9 +190,8 @@ def list_team_ids() -> List[int]:
 def list_player_ids(active_only: bool = True) -> List[int]:
     """Return player IDs from the static endpoint."""
 
-    from nba_api.stats.static import players
-
-    player_info = players.get_players(active_only=active_only)
+    players_module = _import_module("nba_api.stats.static.players")
+    player_info = players_module.get_players(active_only=active_only)
     player_ids = sorted({player["id"] for player in player_info if "id" in player})
     return player_ids
 
@@ -195,7 +210,7 @@ def _resolve_endpoint_class(class_name: str) -> type:
     if class_name in _ENDPOINT_CLASS_CACHE:
         return _ENDPOINT_CLASS_CACHE[class_name]
 
-    endpoints_pkg = importlib.import_module("nba_api.stats.endpoints")
+    endpoints_pkg = _import_module("nba_api.stats.endpoints")
     if hasattr(endpoints_pkg, class_name):
         endpoint_cls = getattr(endpoints_pkg, class_name)
         _ENDPOINT_CLASS_CACHE[class_name] = endpoint_cls
@@ -255,6 +270,7 @@ def list_game_ids(season: str, include_playoffs: bool = False) -> List[str]:
 
 __all__ = [
     "DEFAULT_SLEEP",
+    "ensure_nba_api",
     "parse_seasons_arg",
     "ensure_dir",
     "repo_root",

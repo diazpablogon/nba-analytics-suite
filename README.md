@@ -73,6 +73,7 @@ python scripts/01_download_data/01e_get_player_dashboard_splits.py --seasons "20
 - `boxscore/<slug>/<season>/<slug>__<GAME_ID>.parquet` *(planificado)*
 
 ### Notas operativas
+- Requiere la librería [`nba_api`](https://pypi.org/project/nba-api/) instalada en tu entorno virtual (`pip install nba_api`). Si falta, los scripts abortarán con un mensaje indicando cómo resolverlo.
 - Todos los scripts comparten la misma CLI base: `--seasons`, `--include-playoffs`, `--sleep`, `--max-retries` (más parámetros específicos según corresponda). Los reintentos implementan backoff exponencial y cada llamada respeta una espera mínima (`DEFAULT_SLEEP`).
 - Ajusta las tareas activas del orquestador editando la lista `TASKS` en `01a_downloader_total.py` (campo `"enabled"`).
 - Para evitar descargas repetidas, cada script omite archivos ya existentes en `data/01_raw/` y guarda metadatos junto a cada parquet.
