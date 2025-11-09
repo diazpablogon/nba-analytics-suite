@@ -1,0 +1,9 @@
+# Configuration template for team win/loss model training.
+# Define hyperparameters, data paths, and evaluation settings here.
+training:
+  epochs: 0
+  learning_rate: 0.0
+data:
+  train_path: "../data/05_datasets/train_team_wl.parquet"
+  valid_path: "../data/05_datasets/valid_team_wl.parquet"
+  test_path: "../data/05_datasets/test_team_wl.parquet"
