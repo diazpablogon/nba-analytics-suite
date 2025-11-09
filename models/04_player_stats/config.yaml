@@ -1,0 +1,8 @@
+# Configuration template for NBA player statistics projections.
+training:
+  epochs: 0
+  learning_rate: 0.0
+data:
+  train_path: "../data/05_datasets/train_player_stats.parquet"
+  valid_path: "../data/05_datasets/valid_player_stats.parquet"
+  test_path: "../data/05_datasets/test_player_stats.parquet"
